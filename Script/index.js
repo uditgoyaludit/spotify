@@ -74,30 +74,25 @@ const playMusic = (track, pause = false) => {
 async function displayAlbums() {
     console.log("Displaying albums");
 
-    let a = await fetch(`./songs/`);
-    let response = await a.text();
+    try {
+        let response = await fetch(`./playlists.txt`);
+        if (!response.ok) throw new Error("Failed to load playlists.txt");
+        
+        let text = await response.text();
+        let folders = text.split('\n').map(line => line.trim()).filter(line => line);
+        let cardContainer = document.querySelector(".cardContainer");
 
-    let div = document.createElement("div");
-    div.innerHTML = response;
-    let anchors = Array.from(div.getElementsByTagName("a"));
-    let cardContainer = document.querySelector(".cardContainer");
+        if (!cardContainer) {
+            console.error("Card container not found in the DOM");
+            return;
+        }
 
-    if (!cardContainer) {
-        console.error("Card container not found in the DOM");
-        return;
-    }
-
-    for (let e of anchors) {
-        const relativePath = e.href.replace(window.location.origin, "");
-        const folderMatch = relativePath.match(/^\/songs\/([^\/]+)/);
-        const folder = folderMatch ? folderMatch[1] : null;
-
-        if (folder && relativePath.includes(`songs/${folder}`) && !relativePath.includes(".htaccess")) {
+        for (let folder of folders) {
             try {
-                let response = await fetch(`./songs/${folder}/info.json`);
-                if (!response.ok) throw new Error(`Failed to load info.json for folder ${folder}`);
+                let infoResponse = await fetch(`./songs/${folder}/info.json`);
+                if (!infoResponse.ok) throw new Error(`Failed to load info.json for folder ${folder}`);
 
-                let data = await response.json();
+                let data = await infoResponse.json();
                 if (!data.title || !data.description) throw new Error(`Missing title or description for folder ${folder}`);
 
                 cardContainer.innerHTML += `
@@ -110,19 +105,19 @@ async function displayAlbums() {
             } catch (error) {
                 console.error(error);
             }
-        } else {
-            console.log("No valid folder found for href:", e.href);
         }
-    }
 
-    // Attach event listeners to album cards
-    document.querySelectorAll(".card").forEach(card => {
-        card.addEventListener("click", async () => {
-            const folder = card.dataset.folder;
-            songs = await getSongs(folder);
-            playMusic(songs[0]);
+        // Attach event listeners to album cards
+        document.querySelectorAll(".card").forEach(card => {
+            card.addEventListener("click", async () => {
+                const folder = card.dataset.folder;
+                songs = await getSongs(folder);
+                playMusic(songs[0]);
+            });
         });
-    });
+    } catch (error) {
+        console.error(error);
+    }
 }
 
 
@@ -133,12 +128,13 @@ async function displayAlbums() {
 async function main() {
     let folder = "ncs";  // Set the folder name (you can dynamically set this based on your app logic)
     // Get the list of all the songs
-    songs = await getSongs(folder);
-    playMusic(songs[0], true);
+    
+    // songs = await getSongs(folder);
+    // playMusic(songs[0], true);
 
     // Display all the albums on the page
     await displayAlbums();
-
+    console.log("hi");
     // Attach an event listener to play, next, and previous
     play.addEventListener("click", () => {
         if (currentSong.paused) {
