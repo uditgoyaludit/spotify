@@ -20,7 +20,7 @@ function secondsToMinutesSeconds(seconds) {
 
 async function getSongs(folder) {
     currFolder = folder;
-    let a = await fetch(`../songs/${folder}/`);  // Use dynamic folder
+    let a = await fetch(`./songs/${folder}/`);  // Use dynamic folder
     let response = await a.text();
     let div = document.createElement("div");
     div.innerHTML = response;
@@ -38,14 +38,14 @@ async function getSongs(folder) {
     songUL.innerHTML = "";
     for (const song of songs) {
         songUL.innerHTML += `<li>
-            <img class="invert" width="34" src="../img/music.svg" alt="Music Icon">
+            <img class="invert" width="34" src="./img/music.svg" alt="Music Icon">
             <div class="info">
                 <div>${song.replaceAll("%20", " ")}</div>
                 <div>Artist</div>
             </div>
             <div class="playnow">
                 <span>Play Now</span>
-                <img class="invert" src="../img/play.svg" alt="Play Icon">
+                <img class="invert" src="./img/play.svg" alt="Play Icon">
             </div>
         </li>`;
     }
@@ -62,10 +62,10 @@ async function getSongs(folder) {
 
 const playMusic = (track, pause = false) => {
     console.log("Playing track:", track);  // Debugging line
-    currentSong.src = `../songs/${currFolder}/` + track;
+    currentSong.src = `./songs/${currFolder}/` + track;
     if (!pause) {
         currentSong.play();
-        play.src = "../img/pause.svg";
+        play.src = "./img/pause.svg";
     }
     document.querySelector(".songinfo").innerHTML = decodeURI(track);
     document.querySelector(".songtime").innerHTML = "00:00 / 00:00";
@@ -74,7 +74,7 @@ const playMusic = (track, pause = false) => {
 async function displayAlbums() {
     console.log("Displaying albums");
 
-    let a = await fetch(`../songs/`);
+    let a = await fetch(`./songs/`);
     let response = await a.text();
 
     let div = document.createElement("div");
@@ -94,7 +94,7 @@ async function displayAlbums() {
 
         if (folder && relativePath.includes(`songs/${folder}`) && !relativePath.includes(".htaccess")) {
             try {
-                let response = await fetch(`../songs/${folder}/info.json`);
+                let response = await fetch(`./songs/${folder}/info.json`);
                 if (!response.ok) throw new Error(`Failed to load info.json for folder ${folder}`);
 
                 let data = await response.json();
@@ -102,8 +102,8 @@ async function displayAlbums() {
 
                 cardContainer.innerHTML += `
                     <div data-folder="${folder}" class="card">
-                        <div class="play"><img src="../img/play.svg" alt="Play Icon" width="24" height="24"></div>
-                        <img src="../songs/${folder}/cover.jpg" alt="Album Cover">
+                        <div class="play"><img src="./img/play.svg" alt="Play Icon" width="24" height="24"></div>
+                        <img src="./songs/${folder}/cover.jpg" alt="Album Cover">
                         <h2>${data.title}</h2>
                         <p>${data.description}</p>
                     </div>`;
@@ -143,10 +143,10 @@ async function main() {
     play.addEventListener("click", () => {
         if (currentSong.paused) {
             currentSong.play();
-            play.src = "../img/pause.svg";
+            play.src = "./img/pause.svg";
         } else {
             currentSong.pause();
-            play.src = "../img/play.svg";
+            play.src = "./img/play.svg";
         }
     });
 
