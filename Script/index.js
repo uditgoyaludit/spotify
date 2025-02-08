@@ -20,24 +20,26 @@ function secondsToMinutesSeconds(seconds) {
 
 async function getSongs(folder) {
     currFolder = folder;
-    let a = await fetch(`./songs/${folder}/`);  // Use dynamic folder
-    let response = await a.text();
-    let div = document.createElement("div");
-    div.innerHTML = response;
-    let as = div.getElementsByTagName("a");
     songs = [];
-    for (let index = 0; index < as.length; index++) {
-        const element = as[index];
-        if (element.href.endsWith(".mp3")) {
-            songs.push(element.href.split(`/songs/${folder}/`)[1]);  // Fix path splitting
-        }
+
+    try {
+        let response = await fetch(`./songs/${folder}/songs.json`);
+        if (!response.ok) throw new Error(`Failed to load songs.json for folder ${folder}`);
+
+        let data = await response.json();
+        songs = data.songs || []; // Ensure it's always an array
+
+    } catch (error) {
+        console.error(error);
+        songs = [];
     }
 
     // Show all the songs in the playlist
-    let songUL = document.querySelector(".songList").getElementsByTagName("ul")[0];
+    let songUL = document.querySelector(".songList ul");
     songUL.innerHTML = "";
+
     for (const song of songs) {
-        songUL.innerHTML += `<li>
+        songUL.innerHTML += `<li onclick="playSelectedSong('${folder}', '${song}')">
             <img class="invert" width="34" src="./img/music.svg" alt="Music Icon">
             <div class="info">
                 <div>${song.replaceAll("%20", " ")}</div>
@@ -49,6 +51,8 @@ async function getSongs(folder) {
             </div>
         </li>`;
     }
+
+
 
     // Attach an event listener to each song
     Array.from(document.querySelector(".songList").getElementsByTagName("li")).forEach(e => {
@@ -97,7 +101,7 @@ async function displayAlbums() {
 
                 cardContainer.innerHTML += `
                     <div data-folder="${folder}" class="card">
-                        <div class="play"><img src="./img/play.svg" alt="Play Icon" width="24" height="24"></div>
+                        <div class="play"><img src= "./img/play.svg" alt="Play Icon" width="24" height="24"></div>
                         <img src="./songs/${folder}/cover.jpg" alt="Album Cover">
                         <h2>${data.title}</h2>
                         <p>${data.description}</p>
